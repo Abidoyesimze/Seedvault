@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation"
 import { Menu, ExternalLink } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { WalletConnectButton } from "@/components/connect-button"
+import ProfileMenu from "@/components/ProfileMenu"
 import {
   Sheet,
   SheetContent,
@@ -55,8 +57,8 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="mt-6 pt-6 border-t">
-                  <Button className="w-full">Connect Wallet</Button>
-                </div>
+                    <WalletConnectButton />
+                  </div>
               </nav>
             </SheetContent>
           </Sheet>
@@ -90,7 +92,7 @@ export function Navbar() {
           ))}
           
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm">Connect Wallet</Button>
+            <ProfileMenu />
           </div>
         </nav>
       </div>
