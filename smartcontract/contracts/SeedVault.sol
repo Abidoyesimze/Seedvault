@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./IAave.sol";
+import "./ISelfProtocol.sol";
 
 contract SeedVault is
     Ownable,
@@ -23,6 +24,7 @@ contract SeedVault is
 
     // Protocol integrations
     IPool public immutable aavePool;
+    ISelfProtocol public immutable selfProtocol;
 
     // Vault accounting (share-based system)
     uint256 public totalShares;
@@ -113,12 +115,14 @@ contract SeedVault is
     constructor(
         address _cUSD,
         address _acUSD,
-        address _aavePool
+        address _aavePool,
+        address _selfProtocol
     ) Ownable(msg.sender) {
         if (
             _cUSD == address(0) ||
             _acUSD == address(0) ||
-            _aavePool == address(0)
+            _aavePool == address(0) ||
+            _selfProtocol == address(0)
         ) {
             revert ZeroAddress();
         }
@@ -126,6 +130,7 @@ contract SeedVault is
         cUSD = IERC20(_cUSD);
         acUSD = IAToken(_acUSD);
         aavePool = IPool(_aavePool);
+        selfProtocol = ISelfProtocol(_selfProtocol);
         treasury = msg.sender;
 
         _initializeStrategies();
@@ -136,25 +141,56 @@ contract SeedVault is
     /* ========== VERIFICATION ========== */
 
     /**
-     * @notice Simple verification function - marks user as verified
-     * @dev This is a simplified approach for testing
+     * @notice Verify user identity using Self Protocol
+     * @dev Users submit their Self Protocol proof to verify their identity
+     * @param proofPayload The proof bytes from Self Protocol
+     * @param userContextData Additional context data for verification
+     * 
+     * Based on Self Protocol 2025 documentation:
+     * - Supports proof of humanity, age, nationality verification
+     * - Uses zero-knowledge proofs for privacy-preserving verification
+     * - Verifies against EU IDs, Aadhaar, and Passports
      */
-    function verifySelfProof(bytes memory, bytes memory) external {
+    function verifySelfProof(
+        bytes calldata proofPayload,
+        bytes calldata userContextData
+    ) external {
+        // Call Self Protocol verification contract
+        // This will verify the proof and mark user as verified in SelfProtocolVerification
+        selfProtocol.verifyUser(proofPayload, userContextData);
+
+        // Check if verification was successful
+        require(
+            selfProtocol.isVerified(msg.sender),
+            "Verification failed"
+        );
+
+        // Update local user profile
         users[msg.sender].isVerified = true;
-        users[msg.sender].verifiedAt = block.timestamp;
-        users[msg.sender].userIdentifier = uint256(uint160(msg.sender)); // Use address as identifier
-        
+        users[msg.sender].verifiedAt = selfProtocol.verificationTime(msg.sender);
+        users[msg.sender].userIdentifier = uint256(
+            uint160(msg.sender)
+        ); // Use address as identifier
+
         // Set default strategy
         userStrategy[msg.sender] = StrategyType.CONSERVATIVE;
-        
-        emit UserVerified(msg.sender, users[msg.sender].userIdentifier, block.timestamp);
+
+        emit UserVerified(
+            msg.sender,
+            users[msg.sender].userIdentifier,
+            block.timestamp
+        );
     }
 
     /**
-     * @notice Check if user is verified
+     * @notice Check if user is verified via Self Protocol
+     * @dev Checks both local state and Self Protocol verification status
+     * @param user The address to check
+     * @return bool True if user is verified
      */
     function isVerified(address user) external view returns (bool) {
-        return users[user].isVerified;
+        // Check Self Protocol verification status (primary source of truth)
+        return selfProtocol.isVerified(user);
     }
 
     function _initializeStrategies() internal {
@@ -188,8 +224,12 @@ contract SeedVault is
 
     /* ========== MODIFIERS ========== */
 
+    /**
+     * @notice Ensures user is verified via Self Protocol
+     * @dev Checks Self Protocol verification status (primary source of truth)
+     */
     modifier onlyVerified() {
-        if (!users[msg.sender].isVerified) revert NotVerified();
+        if (!selfProtocol.isVerified(msg.sender)) revert NotVerified();
         _;
     }
 

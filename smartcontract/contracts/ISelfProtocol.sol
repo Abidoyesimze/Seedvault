@@ -67,15 +67,19 @@ contract SelfProtocolVerification is SelfVerificationRoot {
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory /* userData */
     ) internal override {
-        // Convert the nullifier to address
-        address user = address(uint160(uint256(output.nullifier)));
+        // Store verification by the actual caller (msg.sender)
+        // This allows SeedVault to check verification by user address
+        address user = msg.sender;
+        
+        // Also store the nullifier for reference (privacy-preserving identifier)
+        bytes32 nullifier = bytes32(output.nullifier);
 
-        // Store verification data
+        // Store verification data by user address (for SeedVault integration)
         isVerified[user] = true;
         verificationTime[user] = block.timestamp;
-        userNullifier[user] = bytes32(output.nullifier); // Explicit cast
+        userNullifier[user] = nullifier;
 
-        emit UserVerified(user, bytes32(output.nullifier), block.timestamp);
+        emit UserVerified(user, nullifier, block.timestamp);
     }
 
     /**
@@ -109,4 +113,9 @@ interface ISelfProtocol {
     function isVerified(address user) external view returns (bool);
 
     function verificationTime(address user) external view returns (uint256);
+
+    function verifyUser(
+        bytes calldata proofPayload,
+        bytes calldata userContextData
+    ) external;
 }
