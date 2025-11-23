@@ -78,7 +78,15 @@ export default function VerificationModal({ isOpen, onClose, onVerified }: Verif
         userId: userAddress,
         endpoint: checksummedEndpoint,
         endpointType: 'celo-staging',
+        scope: process.env.NEXT_PUBLIC_SELF_SCOPE || 'attestify',
+        network: 'Celo Sepolia',
+        chainId: 11142220,
       });
+      
+      // Verify endpoint address is set correctly
+      if (checksummedEndpoint.toLowerCase() !== '0x2fb9c37215410f97e0fe2906c0e940aa483decf6') {
+        console.warn('⚠️ Endpoint address does not match deployed SelfProtocolVerification contract');
+      }
 
       const app = new SelfAppBuilder({
         version: 2,
@@ -173,6 +181,14 @@ export default function VerificationModal({ isOpen, onClose, onVerified }: Verif
 
   const handleVerificationError = (data?: { error_code?: string; reason?: string; status?: string; proof?: unknown }) => {
     console.error('❌ Self Protocol verification error:', data);
+    console.error('Error details:', {
+      error_code: data?.error_code,
+      reason: data?.reason,
+      status: data?.status,
+      endpoint: CONTRACT_ADDRESSES.celoSepolia.selfProtocol,
+      scope: process.env.NEXT_PUBLIC_SELF_SCOPE || 'attestify',
+    });
+    
     let errorMsg = 'Verification failed. Please try again.';
     
     if (data) {
@@ -197,13 +213,21 @@ export default function VerificationModal({ isOpen, onClose, onVerified }: Verif
         }
       }
       
-      // Check if it's a contract execution error
-      if (data.status === 'proof_generation_failed' || data.reason?.includes('execution reverted')) {
-        errorMsg = 'Contract verification failed. The contract may not be properly configured or the proof validation is failing. Please check the contract implementation.';
+      // Check if it's a proof generation failure
+      if (data.status === 'proof_generation_failed') {
+        errorMsg = 'Proof generation failed. This may be due to:\n' +
+          '1. Contract not properly deployed or verified\n' +
+          '2. Network connectivity issues\n' +
+          '3. Contract configuration mismatch\n' +
+          '4. Self Protocol service temporarily unavailable\n\n' +
+          `Endpoint: ${CONTRACT_ADDRESSES.celoSepolia.selfProtocol}\n` +
+          `Scope: ${process.env.NEXT_PUBLIC_SELF_SCOPE || 'attestify'}`;
+      } else if (data.reason?.includes('execution reverted')) {
+        errorMsg = 'Contract execution reverted. The contract may not be properly configured or the proof validation is failing.';
       }
     }
     
-    setErrorMessage(errorMsg.substring(0, 300)); // Limit error message length
+    setErrorMessage(errorMsg.substring(0, 400)); // Limit error message length
     setStep('error');
   };
 

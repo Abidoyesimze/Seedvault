@@ -150,10 +150,13 @@ contract SelfProtocolVerification is SelfVerificationRoot {
      * @param userContextData Additional context data (can be empty)
      * 
      * @dev Flow:
-     * 1. Calls verifySelfProof() from SelfVerificationRoot
+     * 1. Calls verifySelfProof() from SelfVerificationRoot (inherited public function)
      * 2. SelfVerificationRoot validates proof with IdentityVerificationHubV2
      * 3. On success, customVerificationHook() is called automatically
      * 4. User is marked as verified in isVerified mapping
+     * 
+     * @dev Note: verifySelfProof is already public in SelfVerificationRoot,
+     * so Self Protocol SDK can call it directly on this contract.
      * 
      * @custom:security Uses Self Protocol's zero-knowledge proofs
      * No personal data is stored on-chain, only verification status
