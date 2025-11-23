@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet"
 
 
-const navLinks = [
+const navLinks: { name: string; href: string; external?: boolean }[] = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "AI Assistant", href: "/ai" },
   { name: "Strategy", href: "/strategy" },
@@ -49,7 +49,7 @@ export function Navbar() {
 
                 {/* Overview section for quick links */}
                 <div className="mt-4">
-                  <h3 className="mb-2 text-sm font-semibold">Overview</h3>
+                  {/* <h3 className="mb-2 text-sm font-semibold">Overview</h3> */}
                   <div className="flex flex-col gap-2">
                     {navLinks.map((link) => (
                       <Link

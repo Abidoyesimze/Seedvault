@@ -1,15 +1,7 @@
 "use client"
 
-import DashboardPreview from "@/components/landing/DashboardPreview"
+// import DashboardPreview from "@/components/landing/DashboardPreview"
 
-export default function DashboardPage() {
-  return (
-    <main className="min-h-screen pt-20">
-      <DashboardPreview />
-    </main>
-  )
-}
-'use client';
 
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -33,11 +25,11 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Line, LineChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-// import Navbar from '@/components/Navbar';
+import { Navbar } from '../../components/navbar';
 import Link from 'next/link';
-// import { CONTRACT_CONFIG, CUSD_CONFIG, CONTRACT_ADDRESSES } from '@/abis';
-// import VerificationModal from '@/components/VerificationModal';
-// import AIChat from '@/components/AIChat';
+import { CONTRACT_CONFIG, CUSD_CONFIG, CONTRACT_ADDRESSES } from '@/abis';
+import VerificationModal from '@/components/verification-modal';
+import AIChat from '@/components/AIChat';
 
 
 
@@ -101,7 +93,7 @@ export default function Dashboard() {
     ...CONTRACT_CONFIG,
     functionName: 'getCurrentAPY',
     query: {
-      enabled: !!address && !!isVerified,
+      enabled: !!address && !!isVerified, 
     },
   });
 
@@ -613,10 +605,10 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
+              <button aria-label="notifications" className="p-2 hover:bg-gray-100 rounded-lg">
                 <Bell className="h-5 w-5 text-gray-600" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
+              <button aria-label="settings" className="p-2 hover:bg-gray-100 rounded-lg">
                 <Settings className="h-5 w-5 text-gray-600" />
               </button>
               <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg">
