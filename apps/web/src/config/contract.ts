@@ -1,4 +1,4 @@
-// Contract addresses for AttestifyVault on Celo networks
+// Contract addresses for SeedVault on Celo networks
 export const CONTRACT_ADDRESSES = {
   // Celo Sepolia Testnet (with Fixed Mock Aave for yield testing)
   celoSepolia: {
