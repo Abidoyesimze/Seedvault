@@ -6,8 +6,23 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import {IPoolAddressesProvider} from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
-import {IProtocolDataProvider} from "@aave/core-v3/contracts/interfaces/IProtocolDataProvider.sol";
 import {DataTypes} from "@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol";
+
+// ProtocolDataProvider interface - define locally if not available in package
+interface IProtocolDataProvider {
+    function getReserveData(address asset) external view returns (
+        uint256 availableLiquidity,
+        uint256 totalStableDebt,
+        uint256 totalVariableDebt,
+        uint256 liquidityRate,
+        uint256 variableBorrowRate,
+        uint256 stableBorrowRate,
+        uint256 averageStableBorrowRate,
+        uint256 liquidityIndex,
+        uint256 variableBorrowIndex,
+        uint40 lastUpdateTimestamp
+    );
+}
 
 /**
  * @title AaveV3Strategy

@@ -37,7 +37,7 @@ async function deployVerifier() {
 
   const addresses = getAddresses(chainId);
   const hubV2 = (process.env.SELF_HUB_V2 as Address | undefined) || addresses.selfHubV2;
-  const scopeSeed = process.env.SELF_SCOPE_SEED || "seedvault";
+  const scopeSeed = process.env.SELF_SCOPE_SEED || "attestify";
 
   // Verification config from env or use defaults
   const minimumAge = Number(process.env.SELF_MIN_AGE || "18");
